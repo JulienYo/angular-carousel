@@ -1,6 +1,6 @@
 /**
  * Angular Carousel - Mobile friendly touch carousel for AngularJS
- * @version v0.1.6 - 2014-01-21
+ * @version v0.1.6 - 2014-01-27
  * @link http://revolunet.github.com/angular-carousel
  * @author Julien Bouquillon <julien@revolunet.com>
  * @license MIT License, http://www.opensource.org/licenses/MIT
@@ -63,7 +63,7 @@ angular.module('angular-carousel')
 
     angular.module('angular-carousel')
 
-    .directive('rnCarousel', ['$swipe', '$window', '$document', '$parse', '$compile', function($swipe, $window, $document, $parse, $compile) {
+    .directive('rnCarousel', ['$swipe', '$window', '$document', '$parse', '$compile', '$timeout', function($swipe, $window, $document, $parse, $compile, $timeout) {
         // internal ids to allow multiple instances
         var carouselId = 0,
             // used to compute the sliding speed
@@ -148,7 +148,6 @@ angular.module('angular-carousel')
                         });
 
                     }
-
                     // enable carousel indicator
                     if (angular.isDefined(iAttributes.rnCarouselIndicator)) {
                         var indicator = $compile("<div id='carousel-" + carouselId +"-indicator' index='indicatorIndex' items='carouselIndicatorArray' rn-carousel-indicators class='rn-carousel-indicator'></div>")(scope);
@@ -205,7 +204,7 @@ angular.module('angular-carousel')
                         updateIndicatorArray();
                         updateContainerWidth();
                     }
-
+                    
                     function updateIndicatorArray() {
                         // generate an array to be used by the indicators
                         var items = [];
@@ -216,19 +215,22 @@ angular.module('angular-carousel')
                     function getCarouselWidth() {
                        // container.css('width', 'auto');
                         var slides = carousel.children();
-                        if (slides.length === 0) {
+                        if (slidesCount.length === 0) {
                             containerWidth = carousel[0].getBoundingClientRect().width;
                         } else {
                             containerWidth = slides[0].getBoundingClientRect().width;
                         }
-                        // console.log('getCarouselWidth', containerWidth);
+                        //console.log('getCarouselWidth', containerWidth);
                         return Math.floor(containerWidth);
                     }
 
                     function updateContainerWidth() {
                         // force the carousel container width to match the first slide width
                         container.css('width', '100%');
-                        container.css('width', getCarouselWidth() + 'px');
+                        var width = getCarouselWidth();
+                        if (width) {
+                          container.css('width', width + 'px');
+                        }
                     }
 
                     function scroll(x) {
@@ -283,28 +285,31 @@ angular.module('angular-carousel')
                     }
 
                     function goToSlide(i, animate) {
-                        if (isNaN(i)) {
-                            i = scope.carouselIndex;
-                        }
-                        if (animate) {
-                            // simulate a swipe so we have the standard animation
-                            // used when external binding index is updated or touch canceed
-                            offset = (i * containerWidth);
-                            swipeEnd(null, null, true);
-                            return;
-                        }
-                        scope.carouselIndex = capIndex(i);
-                        updateBufferIndex();
-                        // if outside of angular scope, trigger angular digest cycle
-                        // use local digest only for perfs if no index bound
-                        if (scope.$$phase!=='$apply' && scope.$$phase!=='$digest') {
+                        $timeout(function(){
+                          if (isNaN(i)) {
+                              i = scope.carouselIndex;
+                          }
+                          if (animate) {
+                              // simulate a swipe so we have the standard animation
+                              // used when external binding index is updated or touch canceed
+                              offset = (i * containerWidth);
+                              swipeEnd(null, null, true);
+                              return;
+                          }
+                          scope.carouselIndex = capIndex(i);
+                          updateBufferIndex();
+                          // if outside of angular scope, trigger angular digest cycle
+                          // use local digest only for perfs if no index bound
+                          if (scope.$$phase!=='$apply' && scope.$$phase!=='$digest') {
                             if (isIndexBound) {
                                 scope.$apply();
                             } else {
                                 scope.$digest();
                             }
-                        }
-                        scroll();
+                          }
+                          scroll();
+                        });
+
                     }
 
                     function getAbsMoveTreshold() {
@@ -448,9 +453,9 @@ angular.module('angular-carousel')
                         winEl.unbind('orientationchange', onOrientationChange);
                         winEl.unbind('resize', onOrientationChange);
                     });
+                  }
+                }
 
-                };
-            }
         };
     }]);
 
