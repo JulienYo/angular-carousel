@@ -453,6 +453,10 @@ angular.module('angular-carousel')
                         winEl.unbind('orientationchange', onOrientationChange);
                         winEl.unbind('resize', onOrientationChange);
                     });
+                    
+                    scope.$watch(function(){
+                      return getCarouselWidth(); 
+                    }, onOrientationChange);
                   }
                 }
 
