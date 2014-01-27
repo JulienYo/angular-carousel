@@ -148,6 +148,7 @@ angular.module('angular-carousel')
                         });
 
                     }
+                    
                     // enable carousel indicator
                     if (angular.isDefined(iAttributes.rnCarouselIndicator)) {
                         var indicator = $compile("<div id='carousel-" + carouselId +"-indicator' index='indicatorIndex' items='carouselIndicatorArray' rn-carousel-indicators class='rn-carousel-indicator'></div>")(scope);
@@ -215,7 +216,7 @@ angular.module('angular-carousel')
                     function getCarouselWidth() {
                        // container.css('width', 'auto');
                         var slides = carousel.children();
-                        if (slidesCount.length === 0) {
+                        if (slides.length === 0) {
                             containerWidth = carousel[0].getBoundingClientRect().width;
                         } else {
                             containerWidth = slides[0].getBoundingClientRect().width;
